@@ -58,11 +58,18 @@ def CLI_parser():
     )
 
     parser.add_argument(
-        "--output-prefix",
+        "--output_prefix",
         dest="out_prefix",
         help="prefix for output files",
         type=str,
         default="results",
+    )
+
+    parser.add_argument(
+        "--stats_header",
+        dest="stats",
+        action="store_true",
+        help="Prints the header for the stats file",
     )
 
     return parser
@@ -276,6 +283,16 @@ class GraphPurifier:
 
 
 class BackTranslate:
+    current_stats_header = [
+        "target_num_samples",
+        "min_dist",
+        "seqID",
+        "DistMatrix_t",
+        "GraphPuri_t",
+        "num_sampled",
+        "sequence_filepath",
+    ]
+
     def __init__(
         self,
         aa_sequence: str,
@@ -334,7 +351,9 @@ class BackTranslate:
             )
 
             records.append(rec)
-        SeqIO.write(records, self.output_path + ".fasta", "fasta")
+        seqpath = self.output_path + ".fasta"
+        SeqIO.write(records, seqpath, "fasta")
+        self.stats["sequence_filepath"] = os.path.abspath(seqpath)
 
         with open(self.output_path + ".tsv", "w") as stats_out:
             fieldnames = self.stats.keys()
@@ -349,11 +368,15 @@ if __name__ == "__main__":
 
     parser = CLI_parser()
     args = parser.parse_args()
+    if args.stats:
+        header = "\t".join(BackTranslate.current_stats_header)
+        logging.info(f"{header}")
+        exit(0)
     validate_args(args, parser)
-
     output_path = (
         os.path.join(args.output, args.out_prefix) if args.output is not None else None
     )
+
     if args.sequence is not None:
         BackTranslate(
             args.sequence,
@@ -365,14 +388,17 @@ if __name__ == "__main__":
 
     else:
         num_records = 0
+        this_output_path = output_path
         for seq_record in SeqIO.parse(args.input_file, "fasta"):
+            if args.output is not None:
+                this_output_path = f"{output_path}_{seq_record.id}"
             num_records += 1
             BackTranslate(
-                seq_record.sequence,
+                seq_record.seq,
                 args.num_samples,
                 args.min_dist,
                 seq_ID=seq_record.id,
-                output_path=output_path,
+                output_path=this_output_path,
             )
 
         if num_records == 0:
