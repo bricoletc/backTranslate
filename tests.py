@@ -1,12 +1,12 @@
-from backTrans import (
+from support_objects import (
     DNASample,
     BackTranslater,
     AltCodons,
     Sampler,
     DistMatrix,
+    Hamming,
     GraphPurifier,
 )
-from backTrans import Hamming
 import numpy as np
 import networkx as nx
 import unittest
