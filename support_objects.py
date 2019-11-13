@@ -86,16 +86,25 @@ class AltCodons:
 
 
 class Sampler:
-    def __init__(self, AA_seq: str):
+    def __init__(self, AA_seq: str, forbidden: List[str] = []):
         BackTranslater._init_table()
         self.sequence = AA_seq
         self.choices = [AltCodons(aa) for aa in self.sequence]
+        self.forbidden = forbidden
 
     def sample(self, num_samples):
         samples = set()
         while num_samples > 0:
+            invalid = False
             num_samples -= 1
-            samples.add(self._one_sample())
+            sample = self._one_sample()
+            for _no_go in self.forbidden:
+                if _no_go in sample.sequence:
+                    invalid = True
+                    break
+            if invalid is False:
+                samples.add(sample)
+
         return list(samples)
 
     def _one_sample(self):
@@ -218,6 +227,7 @@ class BackTranslate:
         min_distance: float,
         seq_ID: str,
         output_path=None,
+        forbidden=[],
     ):
         self.aa_seq = aa_sequence
         self.target_num = target_num_samples
@@ -225,6 +235,7 @@ class BackTranslate:
         self.output_path = output_path
         self.samples = []
         self.seq_ID = seq_ID
+        self.forbidden = forbidden
 
         self.stats = {
             "target_num_samples": self.target_num,
@@ -238,7 +249,7 @@ class BackTranslate:
             logging.info(self.stats)
 
     def _run(self):
-        sampler = Sampler(self.aa_seq)
+        sampler = Sampler(self.aa_seq, forbidden=self.forbidden)
         logging.info(f"Sampling DNA sequences compatible with {self.aa_seq}")
         samples = sampler.sample(self.target_num)
 

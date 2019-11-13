@@ -1,7 +1,4 @@
 from Bio import SeqIO
-from Bio.Data import CodonTable
-from Bio.SeqRecord import SeqRecord
-from Bio.Seq import Seq
 import argparse, logging
 import os
 from support_objects import BackTranslate
@@ -68,6 +65,12 @@ def CLI_parser():
         help="Prints the header for the stats file",
     )
 
+    parser.add_argument(
+        "--forbidden",
+        help="File path to DNA sequences that cannot appear in the sample; one sequence per line.",
+        type=str,
+    )
+
     return parser
 
 
@@ -75,17 +78,19 @@ def validate_args(args, parser):
 
     if args.input_file is not None and not os.path.exists(args.input_file):
         logging.error(f"file {args.input_file} does not exist")
-        parser.print_help()
+        # parser.print_help()
         exit(1)
 
     if args.output is not None and not os.path.exists(args.output):
         logging.error(f"directory {args.output} does not exist")
-        parser.print_help()
+        exit(1)
+
+    if args.forbidden is not None and not os.path.exists(args.forbidden):
+        logging.error(f"file {args.forbidden} does not exist")
         exit(1)
 
     if not 0 <= args.min_dist <= 1:
         logging.error(f"min distance {args.min_dist} is not between 0 and 1")
-        parser.print_help()
         exit(1)
 
 
@@ -104,6 +109,12 @@ if __name__ == "__main__":
     output_path = (
         os.path.join(args.output, args.out_prefix) if args.output is not None else None
     )
+    forbidden = []
+    if args.forbidden is not None:
+        with open(args.forbidden) as in_file:
+            forbidden = in_file.readlines()
+            forbidden = [el.strip().upper() for el in forbidden]
+            print(forbidden)
 
     if args.sequence is not None:
         BackTranslate(
@@ -112,6 +123,7 @@ if __name__ == "__main__":
             args.min_dist,
             seq_ID="No_ID",
             output_path=output_path,
+            forbidden=forbidden,
         )
 
     else:
@@ -127,6 +139,7 @@ if __name__ == "__main__":
                 args.min_dist,
                 seq_ID=seq_record.id,
                 output_path=this_output_path,
+                forbidden=forbidden,
             )
 
         if num_records == 0:

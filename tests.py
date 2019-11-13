@@ -12,6 +12,7 @@ import networkx as nx
 import unittest
 from unittest.mock import patch, Mock
 import random
+import itertools
 
 translation_table = {
     "A": ["GCT", "GCC", "GCA", "GCG"],
@@ -113,6 +114,18 @@ class TestSampler(unittest.TestCase):
         for seq in seq_list:
             sampler = Sampler(seq)
             self.assertTrue(1 <= len(sampler.sample(10)) <= 10)
+
+    def test_SampleForbiddenDNASequences_CorrectlyRejected(self):
+        AA_seq = "ACAC"
+        sampler = Sampler(AA_seq)
+        all_choices = [alts.choices for alts in sampler.choices]  # list of lists
+        product = itertools.product(*all_choices)  # '*': list unpacked
+        product = ["".join(combi) for combi in product]
+        forbidden = set(product)
+        sampler = Sampler(AA_seq, forbidden=forbidden)
+
+        samples = sampler.sample(50)
+        self.assertEqual(len(samples), 0)
 
 
 class TestDistMetrics(unittest.TestCase):
