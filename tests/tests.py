@@ -1,4 +1,9 @@
-from support_objects import (
+# PEP366 : Sibling directory imports impossible (__main__ cannot look above itself)
+# Possible solutions: i)sys.path insertion and run from project dir ii)setup.py with `find_packages()` and pip install -e .
+import sys, os
+
+sys.path.insert(0, os.path.abspath("./"))
+from src.support_objects import (
     DNASample,
     BackTranslater,
     AltCodons,
