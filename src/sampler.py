@@ -1,6 +1,7 @@
 from Bio.Data import CodonTable
 from collections import defaultdict
 from typing import List, Dict, Tuple
+import random
 
 
 class AABackTranslationTable:

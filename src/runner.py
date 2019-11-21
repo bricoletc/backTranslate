@@ -1,15 +1,15 @@
 from Bio import SeqIO
-from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 from Bio.Alphabet import IUPAC
 from typing import List, Dict, Tuple
 from networkx.algorithms.flow import shortest_augmenting_path
-import random, os, logging
+import os, logging
 import time, csv
 
-from sampler import Sampler, DNASample
-from distance import DistMatrix
-from graph import GraphPurifier
+from src.sampler import Sampler, DNASample
+from src.distance import DistMatrix
+from src.graph import GraphPurifier
 
 
 class DiffSeqFinder:
@@ -25,7 +25,12 @@ class DiffSeqFinder:
     ]
 
     def __init__(
-        self, min_distance: float, seq_ID: str, output_path=None, forbidden=[],
+        self,
+        min_distance: float,
+        seq_ID: str,
+        output_path=None,
+        forbidden=[],
+        distance_measure="hamming",
     ):
         self.min_dist = min_distance
         self.output_path = output_path
@@ -37,11 +42,12 @@ class DiffSeqFinder:
             "min_dist": self.min_dist,
             "seqID": seq_ID,
         }
+        self.distance_measure = distance_measure
 
     def _run_DiffFinder(self, samples: List[DNASample]):
         logging.info(f"Computing pairwise Hamming distances")
         t1 = time.clock()
-        dm = DistMatrix(samples, "hamming", self.min_dist)
+        dm = DistMatrix(samples, self.distance_measure, self.min_dist)
         t2 = time.clock()
         self.stats["DistMatrix_t"] = int(t2 - t1)
 

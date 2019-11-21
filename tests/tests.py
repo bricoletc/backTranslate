@@ -3,15 +3,10 @@
 import sys, os
 
 sys.path.insert(0, os.path.abspath("./"))
-from src.support_objects import (
-    DNASample,
-    BackTranslater,
-    AltCodons,
-    Sampler,
-    DistMatrix,
-    Hamming,
-    GraphPurifier,
-)
+from src.sampler import DNASample, AABackTranslationTable, AltCodons, Sampler
+from src.distance import DistMatrix, Hamming
+from src.graph import GraphPurifier
+
 import numpy as np
 import networkx as nx
 import unittest
@@ -50,28 +45,28 @@ class TestDNASample(unittest.TestCase):
         self.assertEqual(sample.sequence, None)
 
 
-class TestBackTranslater(unittest.TestCase):
+class TestAABackTranslationTable(unittest.TestCase):
     def tearDown(self):
-        BackTranslater._reset_table()
+        AABackTranslationTable._reset_table()
 
     def test_callStaticMethod_populatedTranslationTable(self):
-        BackTranslater._init_table()
-        self.assertEqual(BackTranslater.translation_table, translation_table)
+        AABackTranslationTable._init_table()
+        self.assertEqual(AABackTranslationTable.translation_table, translation_table)
 
     def test_initialiseObject_populatedTranslationTable(self):
-        bt = BackTranslater()
+        bt = AABackTranslationTable()
         self.assertEqual(bt.translation_table, translation_table)
 
 
 class TestAltCodons(unittest.TestCase):
     def setUp(self):
-        BackTranslater._init_table()
+        AABackTranslationTable._init_table()
 
     def tearDown(self):
-        BackTranslater._reset_table()
+        AABackTranslationTable._reset_table()
 
     def test_initAltCodonsWithoutBackTranslator_Fails(self):
-        BackTranslater._reset_table()
+        AABackTranslationTable._reset_table()
         with self.assertRaises(AssertionError):
             alt_codons = AltCodons("A")
 
@@ -91,12 +86,12 @@ class TestAltCodons(unittest.TestCase):
 
 class TestSampler(unittest.TestCase):
     def tearDown(self):
-        BackTranslater._reset_table()
+        AABackTranslationTable._reset_table()
 
     def test_initSampler_populatedTranslationTable(self):
-        self.assertEqual(len(BackTranslater.translation_table), 0)
+        self.assertEqual(len(AABackTranslationTable.translation_table), 0)
         sampler = Sampler("AAAA")
-        self.assertEqual(BackTranslater.translation_table, translation_table)
+        self.assertEqual(AABackTranslationTable.translation_table, translation_table)
 
     def test_OneSampleDNASequence_CorrectObjectType(self):
         sampler = Sampler("ACAC")
@@ -140,7 +135,7 @@ class TestSampler(unittest.TestCase):
 
 class TestDistMetrics(unittest.TestCase):
     def test_Hamming_correctVal(self):
-        seq1, seq2 = "AGGACC", "AGGAAA"
+        seq1, seq2 = np.array(list("AGGACC")), np.array(list("AGGAAA"))
         metric = Hamming()
         self.assertEqual(metric(seq1, seq2), 2)
 

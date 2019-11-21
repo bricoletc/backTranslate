@@ -1,7 +1,7 @@
 from Bio import SeqIO
 import argparse, logging
 import os
-from runner import fromProtein, fromDNA
+from src.runner import fromProtein, fromDNA
 
 
 def CLI_parser():

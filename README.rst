@@ -3,6 +3,7 @@ Protein back translation with pairwise distance constraints
 
 Usage
 ``````
+Run using `python3 -m src.backTrans`
 
 ::
 

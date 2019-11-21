@@ -10,6 +10,7 @@ biopython = "==1.75"
 decorator = "==4.4.1"
 networkx = "==2.4"
 numpy = "==1.17.4"
+edlib = "*"
 
 [requires]
 python_version = "3.6"

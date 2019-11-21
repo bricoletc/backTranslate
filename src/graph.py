@@ -1,5 +1,5 @@
 import networkx as nx
-from sampler import DNASample
+from src.sampler import DNASample
 
 
 class GraphPurifier:

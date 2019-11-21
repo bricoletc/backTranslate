@@ -1,7 +1,10 @@
+import networkx as nx
 import numpy as np
 from typing import List, Dict, Tuple
+from Bio import pairwise2
+import edlib
 
-from sampler import DNASample
+from src.sampler import DNASample
 
 
 class Distance(object):
@@ -14,8 +17,17 @@ class Distance(object):
 
 class Hamming(Distance):
     def __call__(self, seq1: np.array, seq2: np.array):
-        assert len(seq1) == len(seq2), "ERROR: sequences must be of same length"
-        return (seq1 != seq2).sum()
+        if len(seq1) != len(seq2):  # Case: resort to alignment
+            return edlib.align("".join(seq1), "".join(seq2))["editDistance"]
+
+            best_alignment = pairwise2.align.globalxs(
+                "".join(seq1), "".join(seq2), -10, -0.5
+            )[0]
+            seq1, seq2 = best_alignment[0], best_alignment[1]
+            return sum([seq1[i] != seq2[i] for i in range(len(seq1))])
+
+        else:
+            return (seq1 != seq2).sum()
 
 
 class DistMatrix:
