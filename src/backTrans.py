@@ -1,7 +1,7 @@
 from Bio import SeqIO
 import argparse, logging
 import os
-from support_objects import BackTranslate
+from runner import fromProtein, fromDNA
 
 
 def CLI_parser():
@@ -10,10 +10,10 @@ def CLI_parser():
     )
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
-        "-f",
-        "--file",
+        "-i",
+        "--input_file",
         dest="input_file",
-        help="Path to fasta file containing amino acid sequences",
+        help="Path to fasta file containing amino acid or DNA sequences",
         type=str,
     )
     group.add_argument(
@@ -25,12 +25,13 @@ def CLI_parser():
     )
 
     parser.add_argument(
-        "-n",
-        "--num_samples",
-        dest="num_samples",
-        help="Maximum number of backtranslated DNA samples to produce",
-        type=int,
-        default=1000,
+        "-m",
+        "--mode",
+        dest="mode",
+        choices=["dna", "protein"],
+        help="mode to run the tool on: in protein mode, samples backtranslations, in dna mode, uses the dna sequences as samples directly.",
+        type=str,
+        required=True,
     )
 
     parser.add_argument(
@@ -40,6 +41,15 @@ def CLI_parser():
         help="Minimum distance (Hamming, as fraction of distinct nucleotides) between all returned sequences",
         type=float,
         default=0.3,
+    )
+
+    parser.add_argument(
+        "-n",
+        "--num_samples",
+        dest="num_samples",
+        help="Maximum number of backtranslated DNA samples to produce",
+        type=int,
+        default=1000,
     )
 
     parser.add_argument(
@@ -93,6 +103,54 @@ def validate_args(args, parser):
         logging.error(f"min distance {args.min_dist} is not between 0 and 1")
         exit(1)
 
+    if args.mode == "dna":
+        if args.input_file is None:
+            logging.error(
+                f"Must provide an input file, not a sequence, when running in DNA mode."
+            )
+            exit(1)
+
+
+def run_fromProtein(args, output_path, forbidden):
+    if args.sequence is not None:
+        fromProtein(
+            args.sequence,
+            args.num_samples,
+            args.min_dist,
+            seq_ID="No_ID",
+            output_path=output_path,
+            forbidden=forbidden,
+        )
+
+    else:
+        num_records = 0
+        this_output_path = output_path
+        for seq_record in SeqIO.parse(args.input_file, "fasta"):
+            if args.output is not None:
+                this_output_path = f"{output_path}_{seq_record.id}"
+            num_records += 1
+            fromProtein(
+                seq_record.seq,
+                args.num_samples,
+                args.min_dist,
+                seq_ID=seq_record.id,
+                output_path=this_output_path,
+                forbidden=forbidden,
+            )
+
+        if num_records == 0:
+            logging.warning(f"no fasta records were parsed from {args.input_file}")
+
+
+def run_fromDNA(args, output_path, forbidden):
+    fromDNA(
+        args.input_file,
+        args.min_dist,
+        seq_ID=None,
+        output_path=output_path,
+        forbidden=forbidden,
+    )
+
 
 if __name__ == "__main__":
     logging.basicConfig(
@@ -114,33 +172,8 @@ if __name__ == "__main__":
         with open(args.forbidden) as in_file:
             forbidden = in_file.readlines()
             forbidden = [el.strip().upper() for el in forbidden]
-            print(forbidden)
 
-    if args.sequence is not None:
-        BackTranslate(
-            args.sequence,
-            args.num_samples,
-            args.min_dist,
-            seq_ID="No_ID",
-            output_path=output_path,
-            forbidden=forbidden,
-        )
-
-    else:
-        num_records = 0
-        this_output_path = output_path
-        for seq_record in SeqIO.parse(args.input_file, "fasta"):
-            if args.output is not None:
-                this_output_path = f"{output_path}_{seq_record.id}"
-            num_records += 1
-            BackTranslate(
-                seq_record.seq,
-                args.num_samples,
-                args.min_dist,
-                seq_ID=seq_record.id,
-                output_path=this_output_path,
-                forbidden=forbidden,
-            )
-
-        if num_records == 0:
-            logging.warning(f"no fasta records were parsed from {args.input_file}")
+    if args.mode == "protein":
+        run_fromProtein(args, output_path, forbidden)
+    elif args.mode == "dna":
+        run_fromDNA(args, output_path, forbidden)

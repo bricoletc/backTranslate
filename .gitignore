@@ -5,3 +5,4 @@ venv/
 *.ipynb
 priv
 Pipfile.lock
+README.pdf
