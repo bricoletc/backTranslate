@@ -1,9 +1,8 @@
 script_entry : ../src/backTrans.py
-protein_sequences : "/home/brice/Desktop/work_PhD/projects/backTranslate/priv/5_rifins.fasta"
-# protein_sequences : "/home/brice/Desktop/work_PhD/projects/backTranslate/priv/3d7_rifins/input_data/3D7_rifins.fasta"
+protein_sequences : "/home/brice/Desktop/work_PhD/projects/backTranslate/priv/3d7_rifins/input_data/3D7_rifins.fasta"
 results : "results"
 params : {
-    "backtrans_dists": [24, 26], 
-    "backtrans_num_samples": [200, 400],
-    "ensemble_dists": [28, 30]
+    "backtrans_dists": [22, 24, 26], 
+    "backtrans_num_samples": [2000, 4000],
+    "ensemble_dists": [26, 28, 30]
 }
