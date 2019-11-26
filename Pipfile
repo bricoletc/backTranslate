@@ -11,6 +11,9 @@ decorator = "==4.4.1"
 networkx = "==2.4"
 numpy = "==1.17.4"
 edlib = "*"
+setup-py = "*"
+backtrans = {editable = true,path = "."}
+snakemake = "*"
 
 [requires]
 python_version = "3.6"
