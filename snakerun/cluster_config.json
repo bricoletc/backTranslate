@@ -6,7 +6,7 @@
         "memory"    : 4000,
         "resources" : "\"select[mem>4000] rusage[mem=4000] span[hosts=1]\"",
         "name"      : "backTrans.{rule}.{wildcards}",
-        "output"    : "{config[outputs]}/logs/cluster/{rule}.{wildcards}.out",
-        "error"     : "{config[outputs]}/logs/cluster/{rule}.{wildcards}.err"
+        "output"    : "{config[results]}/logs/cluster/{rule}.out",
+        "error"     : "{config[results]}/logs/cluster/{rule}.err"
     }
 }

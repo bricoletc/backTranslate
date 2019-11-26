@@ -112,8 +112,11 @@ def validate_args(args, parser):
         exit(1)
 
     if args.output is not None and not os.path.exists(args.output):
-        logging.error(f"directory {args.output} does not exist")
-        exit(1)
+        try:
+            os.makedirs(args.output)
+        except Exception:
+            logging.error(f"directory {args.output} does not exist")
+            exit(1)
 
     if args.forbidden is not None and not os.path.exists(args.forbidden):
         logging.error(f"file {args.forbidden} does not exist")

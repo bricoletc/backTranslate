@@ -33,7 +33,7 @@ rule protBackTrans:
 		temp("{outputs}/{dist}_{num_samples}/{id}.tsv")
 	shell:
 		"python3 {config[script_entry]} -s {params.seq} -m protein -d {params.percentage_dist} -n {wildcards.num_samples} "
-		"-o {params.prefix} --output_prefix {wildcards.id} --seq_ID {wildcards.id}"
+		"-o {params.prefix} --output_prefix {wildcards.id} --seq_ID {wildcards.id} --forbidden {config[forbidden_motifs]}"
 
 rule cat_outputs:
 	input:
