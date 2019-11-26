@@ -14,9 +14,6 @@ def IdToSeq(wildcards):
 ruleorder :  imposeDNADists > cat_outputs > protBackTrans # protBackTrans can produce the other two rules' output files, this avoids that. Could also constrain {id} wildcard there to not contain 'all' string
 #########							###########
 
-print(expand("{outputs}/{initial_dist}_{num_samples}/all_{final_dist}.fasta", 
-			outputs=config["results"], initial_dist=config["params"]["backtrans_dists"], 
-			num_samples=config["params"]["backtrans_num_samples"], final_dist=config["params"]["ensemble_dists"]))
 def distToPercentage(wildcards):
 	return int(wildcards.dist) / 100
 
@@ -49,7 +46,7 @@ rule cat_outputs:
 		seqs="{outputs}/{dist}_{num_samples}/all_BTs_sampled.fasta"
 	shell:
 		"""
-		cat {params.specific_directory}/*.tsv > {output.stats}
+		python3 {config[script_entry]} --stats_header | cat - {params.specific_directory}/*.tsv > {output.stats}
 		cat {params.specific_directory}/*.fasta > {output.seqs}
 		"""
 

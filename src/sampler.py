@@ -62,9 +62,10 @@ class AltCodons:
 
 
 class Sampler:
-    def __init__(self, AA_seq: str, forbidden: List[str] = []):
+    def __init__(self, AA_seq: str, seq_ID: str, forbidden: List[str] = []):
         AABackTranslationTable._init_table()
         self.sequence = AA_seq
+        self.seq_ID = seq_ID
         self.choices = [AltCodons(aa) for aa in self.sequence]
         self.forbidden = forbidden
 
@@ -87,4 +88,4 @@ class Sampler:
         dna_seq = ""
         for alt_codons in self.choices:
             dna_seq += alt_codons.sample()
-        return DNASample(dna_seq)
+        return DNASample(dna_seq, self.seq_ID)

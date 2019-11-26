@@ -5,6 +5,18 @@ from src.runner import fromProtein, fromDNA
 
 
 def CLI_parser():
+    class StatsHeaderAction(argparse.Action):
+        def __init__(self, **kwargs):
+            # nargs=0 avoids throwing 'expected argument' error
+            super(StatsHeaderAction, self).__init__(
+                nargs=0, **kwargs,
+            )
+
+        def __call__(self, parser, namespace, values, option_string):
+            header = "\t".join(fromProtein.current_stats_header)
+            print(f"{header}")
+            exit(0)
+
     parser = argparse.ArgumentParser(
         description="Backtranslate amino acid sequences with pairwise distance constraints"
     )
@@ -69,10 +81,18 @@ def CLI_parser():
     )
 
     parser.add_argument(
+        "--seq_ID",
+        help="sequence ID in output fasta files. Only used in combination with `-s` and `-m protein`;"
+        "in other cases, seq ID is that from the input fasta file",
+        type=str,
+        default="No_ID",
+    )
+
+    parser.add_argument(
         "--stats_header",
         dest="stats",
-        action="store_true",
         help="Prints the header for the stats file",
+        action=StatsHeaderAction,
     )
 
     parser.add_argument(
@@ -117,7 +137,7 @@ def run_fromProtein(args, output_path, forbidden):
             args.sequence,
             args.num_samples,
             args.min_dist,
-            seq_ID="No_ID",
+            seq_ID=args.seq_ID,
             output_path=output_path,
             forbidden=forbidden,
         )
@@ -144,11 +164,7 @@ def run_fromProtein(args, output_path, forbidden):
 
 def run_fromDNA(args, output_path, forbidden):
     fromDNA(
-        args.input_file,
-        args.min_dist,
-        seq_ID=None,
-        output_path=output_path,
-        forbidden=forbidden,
+        args.input_file, args.min_dist, output_path=output_path, forbidden=forbidden,
     )
 
 
