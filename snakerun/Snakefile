@@ -1,0 +1,67 @@
+# Workflow taking a set of protein sequences, finding backtranslations of them with distance constraints,
+# And adding distance constraints on the ensemble
+
+configfile: "config.yaml"
+
+######## I don't want to split my multi-fasta and pass in each file, so pass the sequences directly via following code #######
+from Bio import SeqIO
+recs = list(SeqIO.parse(config["protein_sequences"], "fasta"))
+recs = {el.id : str(el.seq) for el in recs}
+rec_keys = list(recs.keys())
+
+def IdToSeq(wildcards):
+	return recs[wildcards.id]
+ruleorder :  imposeDNADists > cat_outputs > protBackTrans # protBackTrans can produce the other two rules' output files, this avoids that. Could also constrain {id} wildcard there to not contain 'all' string
+#########							###########
+
+print(expand("{outputs}/{initial_dist}_{num_samples}/all_{final_dist}.fasta", 
+			outputs=config["results"], initial_dist=config["params"]["backtrans_dists"], 
+			num_samples=config["params"]["backtrans_num_samples"], final_dist=config["params"]["ensemble_dists"]))
+def distToPercentage(wildcards):
+	return int(wildcards.dist) / 100
+
+rule all:
+	input:
+		expand("{outputs}/{initial_dist}_{num_samples}/all_{final_dist}.fasta", 
+		outputs=config["results"], initial_dist=config["params"]["backtrans_dists"], 
+		num_samples=config["params"]["backtrans_num_samples"], final_dist=config["params"]["ensemble_dists"])
+
+rule protBackTrans:
+	params:
+		seq=IdToSeq,
+		prefix="{outputs}/{dist}_{num_samples}",
+		percentage_dist=distToPercentage
+	output:
+		temp("{outputs}/{dist}_{num_samples}/{id}.fasta"),
+		temp("{outputs}/{dist}_{num_samples}/{id}.tsv")
+	shell:
+		"python3 {config[script_entry]} -s {params.seq} -m protein -d {params.percentage_dist} -n {wildcards.num_samples} "
+		"-o {params.prefix} --output_prefix {wildcards.id} --seq_ID {wildcards.id}"
+
+rule cat_outputs:
+	input:
+		expand("{{outputs}}/{{dist}}_{{num_samples}}/{id}.fasta", id=rec_keys),
+		expand("{{outputs}}/{{dist}}_{{num_samples}}/{id}.tsv", id=rec_keys)
+	params:
+		specific_directory="{outputs}/{dist}_{num_samples}"
+	output:
+		stats="{outputs}/{dist}_{num_samples}/stats.tsv",
+		seqs="{outputs}/{dist}_{num_samples}/all_BTs_sampled.fasta"
+	shell:
+		"""
+		cat {params.specific_directory}/*.tsv > {output.stats}
+		cat {params.specific_directory}/*.fasta > {output.seqs}
+		"""
+
+rule imposeDNADists:
+	input:
+		"{outputs}/{initial_dist}_{num_samples}/all_BTs_sampled.fasta"
+	params:
+		prefix="{outputs}/{initial_dist}_{num_samples}",
+		percentage_dist=distToPercentage # use dist as the actual varying param here because the function modifies dist keyword
+	output:
+		"{outputs}/{initial_dist}_{num_samples}/all_{dist}.fasta" 
+	
+	shell:
+		"python3 {config[script_entry]} -i {input} -m dna -d {params.percentage_dist} -o {params.prefix} --output_prefix all_{wildcards.dist}"
+	

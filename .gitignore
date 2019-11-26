@@ -6,3 +6,5 @@ venv/
 priv
 Pipfile.lock
 README.pdf
+snakerun/results
+.snakemake
