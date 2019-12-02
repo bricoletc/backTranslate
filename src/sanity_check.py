@@ -1,7 +1,8 @@
 import sys
 from Bio import SeqIO
 from Bio.Data import CodonTable
-from support_objects import DNASample, DistMatrix
+from src.sampler import DNASample
+from src.distance import DistMatrix
 
 try:
     seqfile = sys.argv[1]
@@ -19,8 +20,8 @@ for record in SeqIO.parse(sys.argv[1], "fasta"):
     translations.add(record.seq.translate().__str__())
     records.append(DNASample(record.seq))
 
-assert len(translations) == 1, "More than one protein....."
-print("......Checking all dna sequences produce the same protein.......OK")
+# assert len(translations) == 1, "More than one protein....."
+print(f"Num Proteins:{len(translations)}")
 
 dm = DistMatrix(records, "hamming", min_dist)
 for i in range(dm.dimension):

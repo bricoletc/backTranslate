@@ -18,7 +18,8 @@ class Distance(object):
 class Hamming(Distance):
     def __call__(self, seq1: np.array, seq2: np.array):
         if len(seq1) != len(seq2):  # Case: resort to alignment
-            return edlib.align("".join(seq1), "".join(seq2))["editDistance"]
+            edit_dist = edlib.align("".join(seq1), "".join(seq2))["editDistance"]
+            return edit_dist / max(len(seq1), len(seq2))
 
             best_alignment = pairwise2.align.globalxs(
                 "".join(seq1), "".join(seq2), -10, -0.5
@@ -27,7 +28,7 @@ class Hamming(Distance):
             return sum([seq1[i] != seq2[i] for i in range(len(seq1))])
 
         else:
-            return (seq1 != seq2).sum()
+            return (seq1 != seq2).sum() / len(seq1)
 
 
 class DistMatrix:
@@ -54,8 +55,6 @@ class DistMatrix:
                 self.matrix[i][j] = self.distance(
                     self._vectorised_samples[i], self._vectorised_samples[j]
                 )
-        if self.dimension > 0:
-            self.matrix /= len(self.samples[0])
 
     def to_Graph(self):
         graph = nx.Graph()
