@@ -1,7 +1,7 @@
 script_entry : ../src/backTrans.py
-protein_sequences : "/nfs/leia/research/iqbal/bletcher/projects/backTranslate/150_rifins/3D7_rifins.fasta"
-results : "/nfs/leia/research/iqbal/bletcher/projects/backTranslate/150_rifins/results"
-forbidden_motifs : "/nfs/leia/research/iqbal/bletcher/projects/backTranslate/150_rifins/restriction_sites.txt"
+protein_sequences : "/nfs/leia/research/iqbal/bletcher/projects/backTranslate/157_rifins/3D7_rifins.fasta"
+results : "/nfs/leia/research/iqbal/bletcher/projects/backTranslate/157_rifins/results"
+forbidden_motifs : "/nfs/leia/research/iqbal/bletcher/projects/backTranslate/157_rifins/restriction_sites.txt"
 params : {
     "backtrans_dists": [22, 24, 26], 
     "backtrans_num_samples": [2000, 4000],

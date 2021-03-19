@@ -8,5 +8,10 @@
         "name"      : "backTrans.{rule}.{wildcards}",
         "output"    : "{config[results]}/logs/cluster/{rule}.out",
         "error"     : "{config[results]}/logs/cluster/{rule}.err"
+    },
+    "imposeDNADists":
+    {
+	    "memory" : "30000",
+	    "resources" : "\"select[mem>30000] rusage[mem=30000] span[hosts=1]\""
     }
 }
